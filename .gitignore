@@ -1,0 +1,17 @@
+.env
+.venv/
+.venv-wsl/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+node_modules/
+frontend/dist/
+stockmind.db
+.DS_Store
+.cursor/
+*.log
+.vscode/
+.idea/
