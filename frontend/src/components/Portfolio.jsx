@@ -4,13 +4,15 @@ import { apiUrl } from "../api.js";
 export default function Portfolio() {
   const [mode, setMode] = useState("paper");
   const [decisions, setDecisions] = useState([]);
+  const [balance, setBalance] = useState(null);
   const [error, setError] = useState(null);
 
   const poll = useCallback(async () => {
     try {
-      const [cfg, dec] = await Promise.all([
+      const [cfg, dec, bal] = await Promise.all([
         fetch(apiUrl("/config")),
         fetch(apiUrl("/decisions")),
+        fetch(apiUrl("/balance")),
       ]);
       if (cfg.ok) {
         const j = await cfg.json();
@@ -19,6 +21,10 @@ export default function Portfolio() {
       if (dec.ok) {
         const list = await dec.json();
         setDecisions(Array.isArray(list) ? list : []);
+      }
+      if (bal.ok) {
+        const b = await bal.json();
+        setBalance(b);
       }
       setError(null);
     } catch (e) {
@@ -33,29 +39,113 @@ export default function Portfolio() {
   }, [poll]);
 
   const last = decisions[0];
-  const buys = decisions.filter((d) => String(d.action).toUpperCase() === "BUY").length;
-  const sells = decisions.filter((d) => String(d.action).toUpperCase() === "SELL").length;
-  const holds = decisions.filter((d) => String(d.action).toUpperCase() === "HOLD").length;
+  const buys = decisions.filter(
+    (d) => String(d.action).toUpperCase() === "BUY",
+  ).length;
+  const sells = decisions.filter(
+    (d) => String(d.action).toUpperCase() === "SELL",
+  ).length;
+  const holds = decisions.filter(
+    (d) => String(d.action).toUpperCase() === "HOLD",
+  ).length;
+
+  // Extract balance data
+  const equity =
+    balance?.portfolio_value || balance?.equity || balance?.total_equity || 0;
+  const dailyPnl =
+    balance?.pnl || balance?.daily_pnl || balance?.unrealized_pnl || 0;
+  const margin = balance?.available_margin || balance?.margin || 0;
+  const balanceError = balance?.error;
 
   return (
     <section className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 shadow-xl">
       <div className="mb-4">
-        <h2 className="text-lg font-semibold tracking-tight text-white">Portfolio (resumen)</h2>
-        <p className="text-sm text-slate-400">Polling cada 30s. Balance en vivo requiere endpoint dedicado.</p>
+        <h2 className="text-lg font-semibold tracking-tight text-white">
+          Portfolio
+        </h2>
+        <p className="text-sm text-slate-400">
+          Polling cada 30s. Balance en vivo desde Kraken.
+        </p>
       </div>
 
-      {error && (
-        <p className="mb-3 text-sm text-rose-300">{error}</p>
-      )}
+      {error && <p className="mb-3 text-sm text-rose-300">{error}</p>}
 
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
-          <p className="text-xs uppercase tracking-wide text-slate-500">Ultima decision</p>
-          <p className="mt-1 font-mono text-sm text-white">{last ? last.action : "—"}</p>
-          <p className="mt-1 text-xs text-slate-400">{last ? last.ticker : ""}</p>
+          <p className="text-xs uppercase tracking-wide text-slate-500">
+            Equity Total
+          </p>
+          <p className="mt-1 font-mono text-lg font-semibold text-white">
+            $
+            {typeof equity === "number"
+              ? equity.toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })
+              : "—"}
+          </p>
+          <p className="mt-1 text-xs text-slate-400">
+            Balance total de la cuenta
+          </p>
         </div>
         <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
-          <p className="text-xs uppercase tracking-wide text-slate-500">Conteo (ventana API)</p>
+          <p className="text-xs uppercase tracking-wide text-slate-500">
+            PnL del Día
+          </p>
+          <p
+            className={`mt-1 font-mono text-lg font-semibold ${dailyPnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}
+          >
+            {typeof dailyPnl === "number"
+              ? (dailyPnl >= 0 ? "+" : "") +
+                dailyPnl.toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })
+              : "—"}
+          </p>
+          <p className="mt-1 text-xs text-slate-400">Ganancia/pérdida diaria</p>
+        </div>
+        <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
+          <p className="text-xs uppercase tracking-wide text-slate-500">
+            Margen Disponible
+          </p>
+          <p className="mt-1 font-mono text-lg font-semibold text-white">
+            $
+            {typeof margin === "number"
+              ? margin.toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })
+              : "—"}
+          </p>
+          <p className="mt-1 text-xs text-slate-400">
+            Margen disponible para trades
+          </p>
+        </div>
+      </div>
+
+      {balanceError && (
+        <p className="mt-3 text-xs text-amber-300">
+          Error de balance: {balanceError}
+        </p>
+      )}
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
+          <p className="text-xs uppercase tracking-wide text-slate-500">
+            Última Decisión
+          </p>
+          <p className="mt-1 font-mono text-sm text-white">
+            {last ? last.action : "—"}
+          </p>
+          <p className="mt-1 text-xs text-slate-400">
+            {last ? last.ticker : ""}
+          </p>
+        </div>
+        <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
+          <p className="text-xs uppercase tracking-wide text-slate-500">
+            Conteo (ventana API)
+          </p>
           <p className="mt-1 text-sm text-slate-200">
             BUY <span className="text-emerald-400">{buys}</span> · SELL{" "}
             <span className="text-rose-400">{sells}</span> · HOLD{" "}
@@ -63,13 +153,11 @@ export default function Portfolio() {
           </p>
         </div>
         <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
-          <p className="text-xs uppercase tracking-wide text-slate-500">PnL (placeholder)</p>
-          <p className="mt-1 text-lg font-semibold text-slate-500">—</p>
-          <p className="text-xs text-slate-500">Conecta Kraken paper + endpoint de balance para valores reales.</p>
+          <p className="text-xs uppercase tracking-wide text-slate-500">Modo</p>
+          <p className="mt-1 text-sm text-slate-200 capitalize">{mode}</p>
+          <p className="mt-1 text-xs text-slate-400">Configuración actual</p>
         </div>
       </div>
-
-      <p className="mt-3 text-xs text-slate-500">Modo servidor: {mode}</p>
     </section>
   );
 }
