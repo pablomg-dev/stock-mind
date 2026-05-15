@@ -10,6 +10,7 @@ export default defineConfig({
     proxy: {
       "/decisions": { target: api, changeOrigin: true },
       "/config": { target: api, changeOrigin: true },
+      "/balance": { target: api, changeOrigin: true },
       "/ws": { target: api, ws: true, changeOrigin: true },
     },
   },

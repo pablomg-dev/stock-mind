@@ -2,7 +2,9 @@
 export function apiUrl(path) {
   const base = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
   if (base) return `${base}${path}`;
-  return path;
+  const loc = window.location;
+  const host = loc.hostname === "localhost" ? "localhost:8000" : loc.host;
+  return `${loc.protocol}//${host}${path}`;
 }
 
 export function wsUrl() {

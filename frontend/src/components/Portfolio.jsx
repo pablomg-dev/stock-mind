@@ -9,11 +9,17 @@ export default function Portfolio() {
 
   const poll = useCallback(async () => {
     try {
+      console.log("Portfolio: Starting poll");
       const [cfg, dec, bal] = await Promise.all([
         fetch(apiUrl("/config")),
         fetch(apiUrl("/decisions")),
         fetch(apiUrl("/balance")),
       ]);
+      console.log("Portfolio: Fetches completed", {
+        cfg: cfg.ok,
+        dec: dec.ok,
+        bal: bal.ok,
+      });
       if (cfg.ok) {
         const j = await cfg.json();
         if (j?.mode) setMode(String(j.mode).toLowerCase());
@@ -24,10 +30,20 @@ export default function Portfolio() {
       }
       if (bal.ok) {
         const b = await bal.json();
+        console.log("Portfolio: Balance data", b);
         setBalance(b);
+      } else {
+        console.error(
+          "Portfolio: Balance fetch failed",
+          bal.status,
+          bal.statusText,
+        );
+        const errorText = await bal.text();
+        console.error("Portfolio: Balance error response", errorText);
       }
       setError(null);
     } catch (e) {
+      console.error("Portfolio: Poll error", e);
       setError(e?.message || "Error de red");
     }
   }, []);
@@ -49,11 +65,11 @@ export default function Portfolio() {
     (d) => String(d.action).toUpperCase() === "HOLD",
   ).length;
 
-  // Extract balance data
+  // Extract balance data from Kraken Futures response
   const equity =
-    balance?.portfolio_value || balance?.equity || balance?.total_equity || 0;
+    balance?.collateral || balance?.portfolio_value || balance?.equity || 0;
   const dailyPnl =
-    balance?.pnl || balance?.daily_pnl || balance?.unrealized_pnl || 0;
+    balance?.unrealized_pnl || balance?.pnl || balance?.daily_pnl || 0;
   const margin = balance?.available_margin || balance?.margin || 0;
   const balanceError = balance?.error;
 

@@ -45,14 +45,26 @@ def balance():
     try:
         mode = os.getenv("MODE", "paper").lower()
         command = ["kraken", "futures", f"{mode}", "balance", "-o", "json"]
+        print(f"Running command: {' '.join(command)}")
         result = subprocess.run(command, capture_output=True, text=True, timeout=10)
+        print(f"Return code: {result.returncode}")
+        print(f"Stdout: {result.stdout[:200]}")
+        print(f"Stderr: {result.stderr[:200]}")
+        
         if result.returncode == 0:
-            return json.loads(result.stdout)
+            try:
+                return json.loads(result.stdout)
+            except json.JSONDecodeError as e:
+                print(f"JSON decode error: {e}")
+                return {"error": f"Invalid JSON from Kraken CLI: {str(e)}", "raw_output": result.stdout[:500]}
         else:
-            return {"error": f"Kraken CLI error: {result.stderr}"}
+            return {"error": f"Kraken CLI error (code {result.returncode}): {result.stderr}"}
     except subprocess.TimeoutExpired:
         return {"error": "Kraken CLI timeout"}
+    except FileNotFoundError:
+        return {"error": "Kraken CLI not found. Please install Kraken CLI and add it to PATH."}
     except Exception as e:
+        print(f"Unexpected error: {e}")
         return {"error": str(e)}
 
 
