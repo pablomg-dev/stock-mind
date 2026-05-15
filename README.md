@@ -1,75 +1,250 @@
 # StockMind
 
-Agente autónomo de trading de **xStocks** (Kraken CLI + Gemini 2.5 Flash) con dashboard en React.
+<div align="center">
 
-## Requisitos
+![StockMind](https://img.shields.io/badge/StockMind-AI%20Trading%20Agent-blue)
+![Python](https://img.shields.io/badge/Python-3.11+-green)
+![React](https://img.shields.io/badge/React-18+-61DAFB)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688)
 
-- Python **3.11+**
-- [Kraken CLI](https://github.com/krakenfx/kraken-cli) instalado y en el `PATH`
-- Node.js **18+** (para el frontend)
-- API key de [Google AI Studio](https://aistudio.google.com/app/apikey) (Gemini)
+**Autonomous trading agent for xStocks (Kraken CLI + Gemini 2.5 Flash) with real-time React dashboard**
 
-## Configuración
+</div>
 
-En **Windows PowerShell** (incluida 5.x) no uses `&&` para encadenar: ejecutá **un comando por línea**, o en una sola línea usá `;` (por ejemplo `cd frontend; npm install`).
+---
 
-1. Copiá el ejemplo de entorno y completá las variables:
+## 🚀 Features
 
-   **PowerShell (raíz del repo):**
+- **AI-Powered Decisions**: Uses Google Gemini 2.5 Flash for intelligent trading decisions
+- **Technical Analysis**: RSI, MACD, SMA indicators for market signals
+- **Real-Time Dashboard**: React frontend with live WebSocket updates
+- **Paper & Live Trading**: Switch between simulation and real trading modes
+- **News Sentiment**: Integrates NewsAPI for market sentiment analysis
+- **Kraken Integration**: Executes trades via Kraken CLI
+- **SQLite Database**: Persistent decision history and tracking
 
-   ```powershell
-   Copy-Item .env.example .env
-   ```
+---
 
-   En bash (Linux/macOS): `cp .env.example .env`
+## 📋 Requirements
 
-2. Instalá dependencias Python (recomendado: entorno virtual):
+- **Python 3.11+**
+- [Kraken CLI](https://github.com/krakenfx/kraken-cli) installed and in `PATH`
+- **Node.js 18+** (for the frontend)
+- Google AI Studio [API Key](https://aistudio.google.com/app/apikey) (Gemini)
+- NewsAPI [API Key](https://newsapi.org/) (optional, for sentiment analysis)
 
-   **PowerShell:**
+---
 
-   ```powershell
-   python -m venv .venv
-   .\.venv\Scripts\Activate.ps1
-   pip install -r requirements.txt
-   ```
+## 🛠️ Installation
 
-   Si la activación falla por política de ejecución: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` (una vez).
+### 1. Clone the repository
 
-3. Instalá dependencias del frontend:
+```bash
+git clone https://github.com/pablomg-dev/stock-mind.git
+cd stock-mind
+```
 
-   **PowerShell:**
+### 2. Environment Configuration
 
-   ```powershell
-   Set-Location frontend
-   npm install
-   ```
+Copy the example environment file and fill in your API keys:
 
-   Para volver a la raíz después: `Set-Location ..`
+**Windows PowerShell:**
 
-## Cómo ejecutar
+```powershell
+Copy-Item .env.example .env
+```
 
-Desde la **raíz del repositorio** (`StockMind/`):
+**Linux/macOS:**
 
-| Componente | Comando (PowerShell: uno por línea) |
-|------------|-------------------------------------|
-| Agente (loop) | `python -m agent.main` |
-| API (FastAPI) | `uvicorn api.server:app --reload --port 8000` |
-| Dashboard | `Set-Location frontend` luego `npm run dev` |
+```bash
+cp .env.example .env
+```
 
-Equivalente en una sola línea (válido en PowerShell): `Set-Location frontend; npm run dev`
+Edit `.env` with your credentials:
 
-El frontend en desarrollo usa **proxy** hacia `http://127.0.0.1:8000` para `/decisions`, `/config` y `/ws`. Si corrés el build estático sin proxy, definí `VITE_API_URL` (por ejemplo `http://localhost:8000`).
+```env
+GEMINI_API_KEY=your_gemini_key
+KRAKEN_API_KEY=your_kraken_key
+KRAKEN_API_SECRET=your_kraken_secret
+NEWS_API_KEY=your_news_api_key
+TICKER=PF_NVDAXUSD
+INTERVAL_MINUTES=15
+MODE=paper
+```
 
-Opcional: variable `STOCKMIND_DB_PATH` apunta al archivo SQLite compartido entre el agente y la API (por defecto: `stockmind.db` en la raíz del repo).
+### 3. Python Dependencies (Virtual Environment Recommended)
 
-## Modo paper vs live
+**Windows PowerShell:**
 
-El archivo `.env` define `MODE=paper` o `MODE=live`. El dashboard muestra un badge **Paper** o **Live** según `GET /config` (lee el mismo `.env` que la API).
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
 
-## Estructura
+**Linux/macOS:**
 
-- `agent/` — señales, Gemini, ejecución Kraken, SQLite, loop principal
-- `api/` — REST + WebSocket para el frontend
-- `frontend/` — Vite + React + Tailwind + Recharts
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
 
-Las convenciones detalladas del hackathon están en `.cursor/rules/stockmind.mdc`.
+> **Note:** If activation fails on Windows due to execution policy, run: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`
+
+### 4. Frontend Dependencies
+
+**Windows PowerShell:**
+
+```powershell
+cd frontend
+npm install
+cd ..
+```
+
+**Linux/macOS:**
+
+```bash
+cd frontend
+npm install
+cd ..
+```
+
+---
+
+## 🎮 Running the Application
+
+You need **3 separate terminals** to run all components:
+
+### Terminal 1: Trading Agent
+
+```bash
+# Activate virtual environment first
+source .venv/bin/activate  # Linux/macOS
+# or
+.\.venv\Scripts\Activate.ps1  # Windows
+
+# Run the agent
+python -m agent.main
+```
+
+### Terminal 2: FastAPI Backend
+
+```bash
+# Activate virtual environment first
+source .venv/bin/activate  # Linux/macOS
+# or
+.\.venv\Scripts\Activate.ps1  # Windows
+
+# Start the API server
+uvicorn api.server:app --reload --host 0.0.0.0 --port 8000
+```
+
+### Terminal 3: React Frontend
+
+```bash
+cd frontend
+npm run dev
+```
+
+The frontend will be available at `http://localhost:5173`
+
+---
+
+## 📊 Architecture
+
+```
+StockMind/
+├── agent/              # Trading agent logic
+│   ├── brain.py       # Gemini AI decision engine
+│   ├── signals.py     # Technical indicators (RSI, MACD, SMA)
+│   ├── executor.py    # Kraken CLI trade execution
+│   ├── db.py          # SQLite database operations
+│   └── main.py        # Main trading loop
+├── api/               # FastAPI backend
+│   └── server.py      # REST API + WebSocket server
+├── frontend/          # React dashboard
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── ReasoningFeed.jsx  # Live decision feed
+│   │   │   ├── Portfolio.jsx       # Portfolio display
+│   │   │   └── PnLChart.jsx       # P&L chart
+│   │   ├── App.jsx
+│   │   └── api.js
+│   └── public/
+│       └── favicon.svg
+├── .env.example       # Environment template
+├── requirements.txt   # Python dependencies
+└── package.json       # Node.js dependencies
+```
+
+---
+
+## 🔧 Configuration
+
+### Trading Mode
+
+Set `MODE` in `.env`:
+
+- `paper` - Simulation mode (no real trades)
+- `live` - Real trading with Kraken
+
+The dashboard displays a **Paper** or **Live** badge based on this setting.
+
+### API Endpoints
+
+- `GET /decisions` - Get recent trading decisions
+- `GET /config` - Get current trading mode
+- `WS /ws` - WebSocket for real-time updates
+
+### Environment Variables
+
+| Variable            | Description               | Default        |
+| ------------------- | ------------------------- | -------------- |
+| `GEMINI_API_KEY`    | Google Gemini API key     | Required       |
+| `KRAKEN_API_KEY`    | Kraken API key            | Required       |
+| `KRAKEN_API_SECRET` | Kraken API secret         | Required       |
+| `NEWS_API_KEY`      | NewsAPI key for sentiment | Optional       |
+| `TICKER`            | Trading pair ticker       | `PF_NVDAXUSD`  |
+| `INTERVAL_MINUTES`  | Trading loop interval     | `15`           |
+| `MODE`              | Trading mode (paper/live) | `paper`        |
+| `STOCKMIND_DB_PATH` | SQLite database path      | `stockmind.db` |
+
+---
+
+## 🎨 Tech Stack
+
+### Backend
+
+- **FastAPI** - Modern Python web framework
+- **Uvicorn** - ASGI server
+- **SQLite** - Database
+- **Google Gemini 2.5 Flash** - AI decision engine
+- **Kraken CLI** - Trade execution
+- **pandas & pandas-ta** - Technical analysis
+
+### Frontend
+
+- **React 18** - UI library
+- **Vite** - Build tool
+- **TailwindCSS** - Styling
+- **Recharts** - Data visualization
+- **WebSocket API** - Real-time updates
+
+---
+
+## 📝 License
+
+This project is open source and available under the MIT License.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+---
+
+## 📧 Contact
+
+For questions or support, please open an issue on GitHub.
