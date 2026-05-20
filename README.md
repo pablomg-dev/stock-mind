@@ -1,15 +1,8 @@
-# StockMind
+# 🧠 StockMind
 
-<div align="center">
+> **Autonomous AI trading agent for xStocks.** Powered by Kraken CLI + Gemini 2.5 Flash with a real-time React dashboard.
 
-![StockMind](https://img.shields.io/badge/StockMind-AI%20Trading%20Agent-blue)
-![Python](https://img.shields.io/badge/Python-3.11+-green)
-![React](https://img.shields.io/badge/React-18+-61DAFB)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688)
-
-**Autonomous trading agent for xStocks (Kraken CLI + Gemini 2.5 Flash) with real-time React dashboard**
-
-</div>
+![Python](https://img.shields.io/badge/Python-3.11+-3776AB) ![React](https://img.shields.io/badge/React-18+-61DAFB) ![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688) ![Gemini](https://img.shields.io/badge/Gemini-2.5%20Flash-8E75B2) ![SQLite](https://img.shields.io/badge/SQLite-Database-003B57) ![Mode](https://img.shields.io/badge/Mode-Paper%20%2F%20Live-22c55e)
 
 ---
 
