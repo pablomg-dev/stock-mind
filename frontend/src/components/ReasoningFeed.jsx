@@ -77,7 +77,7 @@ export default function ReasoningFeed() {
       setItems(Array.isArray(data) ? data : []);
       setError(null);
     } catch (e) {
-      setError(e?.message || "Error al cargar decisiones");
+      setError(e?.message || "Error loading decisions");
     }
   }, []);
 
@@ -114,10 +114,10 @@ export default function ReasoningFeed() {
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold tracking-tight text-white">
-            Razonamiento del agente
+            Agent Reasoning
           </h2>
           <p className="text-sm text-slate-400">
-            Decisiones recientes y feed en tiempo real (WebSocket)
+            Recent decisions and real-time feed (WebSocket)
           </p>
         </div>
         <button
@@ -125,7 +125,7 @@ export default function ReasoningFeed() {
           onClick={load}
           className="rounded-lg bg-slate-800 px-3 py-1.5 text-sm font-medium text-slate-200 ring-1 ring-slate-700 hover:bg-slate-800/80"
         >
-          Actualizar
+          Refresh
         </button>
       </div>
 
@@ -138,8 +138,7 @@ export default function ReasoningFeed() {
       <ul className="max-h-[480px] space-y-3 overflow-y-auto pr-1">
         {merged.length === 0 && !error && (
           <li className="rounded-xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-8 text-center text-slate-500">
-            No hay decisiones en la base. Ejecutá el agente para poblar el
-            historial.
+            No decisions in the database. Run the agent to populate the history.
           </li>
         )}
         {merged.map((d, i) => (
@@ -149,16 +148,14 @@ export default function ReasoningFeed() {
           >
             <div className="flex flex-wrap items-center gap-2 text-sm text-slate-400">
               <span className="font-mono text-xs text-slate-500">
-                {new Date(d.timestamp).toLocaleString("es-ES", {
+                {new Date(d.timestamp).toLocaleString(undefined, {
                   year: "numeric",
                   month: "2-digit",
                   day: "2-digit",
                   hour: "2-digit",
                   minute: "2-digit",
                   second: "2-digit",
-                  timeZone: "UTC",
-                })}{" "}
-                UTC
+                })}
               </span>
               <span className="text-slate-300">{d.ticker}</span>
               <span
@@ -167,14 +164,14 @@ export default function ReasoningFeed() {
                 {d.action}
               </span>
               <span className="ml-auto font-mono text-slate-200">
-                {Math.round((Number(d.confidence) || 0) * 100)}% confianza
+                {Math.round((Number(d.confidence) || 0) * 100)}% confidence
               </span>
             </div>
             <p className="mt-2 text-sm leading-relaxed text-slate-200">
               {d.reasoning}
             </p>
             <p className="mt-2 text-xs text-amber-200/90">
-              <span className="font-semibold text-amber-400/90">Riesgo: </span>
+              <span className="font-semibold text-amber-400/90">Risk: </span>
               {d.risk_note}
             </p>
           </li>

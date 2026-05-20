@@ -44,7 +44,7 @@ export default function Portfolio() {
       setError(null);
     } catch (e) {
       console.error("Portfolio: Poll error", e);
-      setError(e?.message || "Error de red");
+      setError(e?.message || "Network error");
     }
   }, []);
 
@@ -80,7 +80,7 @@ export default function Portfolio() {
           Portfolio
         </h2>
         <p className="text-sm text-slate-400">
-          Polling cada 30s. Balance en vivo desde Kraken.
+          Polling every 30s. Live balance from Kraken.
         </p>
       </div>
 
@@ -89,7 +89,7 @@ export default function Portfolio() {
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
           <p className="text-xs uppercase tracking-wide text-slate-500">
-            Equity Total
+            Total Equity
           </p>
           <p className="mt-1 font-mono text-lg font-semibold text-white">
             $
@@ -101,12 +101,12 @@ export default function Portfolio() {
               : "—"}
           </p>
           <p className="mt-1 text-xs text-slate-400">
-            Balance total de la cuenta
+            Total account balance
           </p>
         </div>
         <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
           <p className="text-xs uppercase tracking-wide text-slate-500">
-            PnL del Día
+            Daily PnL
           </p>
           <p
             className={`mt-1 font-mono text-lg font-semibold ${dailyPnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}
@@ -119,11 +119,11 @@ export default function Portfolio() {
                 })
               : "—"}
           </p>
-          <p className="mt-1 text-xs text-slate-400">Ganancia/pérdida diaria</p>
+          <p className="mt-1 text-xs text-slate-400">Daily profit/loss</p>
         </div>
         <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
           <p className="text-xs uppercase tracking-wide text-slate-500">
-            Margen Disponible
+            Available Margin
           </p>
           <p className="mt-1 font-mono text-lg font-semibold text-white">
             $
@@ -135,21 +135,21 @@ export default function Portfolio() {
               : "—"}
           </p>
           <p className="mt-1 text-xs text-slate-400">
-            Margen disponible para trades
+            Available margin for trades
           </p>
         </div>
       </div>
 
       {balanceError && (
         <p className="mt-3 text-xs text-amber-300">
-          Error de balance: {balanceError}
+          Balance error: {balanceError}
         </p>
       )}
 
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
         <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
           <p className="text-xs uppercase tracking-wide text-slate-500">
-            Última Decisión
+            Last Decision
           </p>
           <p className="mt-1 font-mono text-sm text-white">
             {last ? last.action : "—"}
@@ -160,7 +160,7 @@ export default function Portfolio() {
         </div>
         <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
           <p className="text-xs uppercase tracking-wide text-slate-500">
-            Conteo (ventana API)
+            Count (API window)
           </p>
           <p className="mt-1 text-sm text-slate-200">
             BUY <span className="text-emerald-400">{buys}</span> · SELL{" "}
@@ -169,9 +169,9 @@ export default function Portfolio() {
           </p>
         </div>
         <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
-          <p className="text-xs uppercase tracking-wide text-slate-500">Modo</p>
+          <p className="text-xs uppercase tracking-wide text-slate-500">Mode</p>
           <p className="mt-1 text-sm text-slate-200 capitalize">{mode}</p>
-          <p className="mt-1 text-xs text-slate-400">Configuración actual</p>
+          <p className="mt-1 text-xs text-slate-400">Current configuration</p>
         </div>
       </div>
     </section>

@@ -35,3 +35,9 @@ export async function updateConfig(config) {
   if (!res.ok) throw new Error("Failed to update config");
   return res.json();
 }
+
+export async function getPosition() {
+  const res = await fetch(apiUrl("/position"));
+  if (!res.ok) throw new Error("Failed to fetch position");
+  return res.json();
+}

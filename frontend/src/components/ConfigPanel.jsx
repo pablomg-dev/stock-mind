@@ -4,6 +4,7 @@ import { getConfig, updateConfig } from "../api.js";
 export default function ConfigPanel() {
   const [leverage, setLeverage] = useState(5);
   const [maxPositionPct, setMaxPositionPct] = useState(10);
+  const [intervalMinutes, setIntervalMinutes] = useState(15);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState("");
 
@@ -16,6 +17,7 @@ export default function ConfigPanel() {
       const config = await getConfig();
       setLeverage(config.leverage || 5);
       setMaxPositionPct(config.max_position_pct || 10);
+      setIntervalMinutes(config.interval_minutes || 15);
     } catch (error) {
       console.error("Failed to load config:", error);
     }
@@ -25,12 +27,12 @@ export default function ConfigPanel() {
     setIsSaving(true);
     setSaveStatus("");
     try {
-      await updateConfig({ leverage, max_position_pct: maxPositionPct });
-      setSaveStatus("Configuración guardada");
+      await updateConfig({ leverage, max_position_pct: maxPositionPct, interval_minutes: intervalMinutes });
+      setSaveStatus("Configuration saved");
       setTimeout(() => setSaveStatus(""), 2000);
     } catch (error) {
       console.error("Failed to save config:", error);
-      setSaveStatus("Error al guardar");
+      setSaveStatus("Error saving");
       setTimeout(() => setSaveStatus(""), 2000);
     } finally {
       setIsSaving(false);
@@ -40,7 +42,7 @@ export default function ConfigPanel() {
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-6">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-white">Configuración</h2>
+        <h2 className="text-lg font-semibold text-white">Configuration</h2>
         {saveStatus && (
           <span className={`text-sm ${saveStatus.includes("Error") ? "text-red-400" : "text-green-400"}`}>
             {saveStatus}
@@ -89,6 +91,25 @@ export default function ConfigPanel() {
             <span>1%</span>
             <span>25%</span>
           </div>
+
+          {/* Interval Slider */}
+          <div className="mt-4 mb-2 flex items-center justify-between">
+            <label className="text-sm font-medium text-slate-300">Interval (minutes)</label>
+            <span className="text-lg font-bold text-white">{intervalMinutes} min</span>
+          </div>
+          <input
+            type="range"
+            min="5"
+            max="60"
+            step="5"
+            value={intervalMinutes}
+            onChange={(e) => setIntervalMinutes(parseInt(e.target.value))}
+            className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+          />
+          <div className="mt-1 flex justify-between text-xs text-slate-500">
+            <span>5</span>
+            <span>60</span>
+          </div>
         </div>
 
         {/* Save Button */}
@@ -97,7 +118,7 @@ export default function ConfigPanel() {
           disabled={isSaving}
           className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSaving ? "Guardando..." : "Guardar Configuración"}
+          {isSaving ? "Saving..." : "Save Configuration"}
         </button>
       </div>
     </div>

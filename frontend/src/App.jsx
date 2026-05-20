@@ -35,7 +35,7 @@ export default function App() {
             StockMind
           </h1>
           <p className="mt-1 text-sm text-slate-400">
-            xStocks · Kraken CLI · Gemini — dashboard de razonamiento
+            xStocks · Kraken CLI · Gemini — reasoning dashboard
           </p>
         </div>
         <span

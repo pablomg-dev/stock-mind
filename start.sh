@@ -7,6 +7,7 @@ PROJECT_DIR="/mnt/c/Users/pablo/pablo/Documents/Coding/StockMind"
 cd "$PROJECT_DIR" || exit 1
 
 # Activate virtual environment
+export PATH="$HOME/.cargo/bin:$PATH"
 source .venv-wsl/bin/activate
 
 # Function to cleanup background processes on exit

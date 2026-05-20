@@ -16,14 +16,16 @@ def get_config() -> dict:
             data = response.json()
             return {
                 "leverage": data.get("leverage", 5),
-                "max_position_pct": data.get("max_position_pct", 10) / 100
+                "max_position_pct": data.get("max_position_pct", 10) / 100,
+                "interval_minutes": data.get("interval_minutes", 15)
             }
     except Exception as e:
         print(f"Error fetching config from API: {e}")
     # Fallback a valores por defecto
     return {
         "leverage": int(os.getenv("FUTURES_LEVERAGE", "5")),
-        "max_position_pct": float(os.getenv("MAX_POSITION_PCT", "10")) / 100
+        "max_position_pct": float(os.getenv("MAX_POSITION_PCT", "10")) / 100,
+        "interval_minutes": int(os.getenv("INTERVAL_MINUTES", "15"))
     }
 
 

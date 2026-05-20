@@ -10,7 +10,7 @@ load_dotenv(_ROOT / ".env")
 
 from agent.brain import get_decision
 from agent.db import init_db, log_decision, log_trade
-from agent.executor import MODE, calculate_volume, execute_order, get_balance
+from agent.executor import MODE, calculate_volume, execute_order, get_balance, get_config
 from agent.signals import build_signals
 
 TICKER = os.getenv("TICKER", "PF_NVDAXUSD")
@@ -168,8 +168,13 @@ def run() -> None:
         except Exception as e:
             print(f"[loop] Error en ciclo: {e}")
 
-        print(f"[loop] Próxima ejecución en {INTERVAL // 60} minutos...")
-        time.sleep(INTERVAL)
+        try:
+            interval_sec = get_config().get("interval_minutes", 15) * 60
+        except Exception:
+            interval_sec = INTERVAL
+
+        print(f"[loop] Próxima ejecución en {interval_sec // 60} minutos...")
+        time.sleep(interval_sec)
 
 
 if __name__ == "__main__":

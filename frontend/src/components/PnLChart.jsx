@@ -77,11 +77,10 @@ export default function PnLChart() {
     <section className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 shadow-xl">
       <div className="mb-4">
         <h2 className="text-lg font-semibold tracking-tight text-white">
-          Curva de Equity (USD)
+          Equity Curve (USD)
         </h2>
         <p className="text-sm text-slate-400">
-          Serie derivada de decisiones en USD. Basado en balance actual de
-          Kraken.
+          Series derived from decisions in USD. Based on current Kraken balance.
         </p>
       </div>
       <div className="h-64 w-full">
