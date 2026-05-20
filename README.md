@@ -22,6 +22,8 @@
 - **News Sentiment**: Integrates NewsAPI for market sentiment analysis
 - **Kraken Integration**: Executes trades via Kraken CLI
 - **SQLite Database**: Persistent decision history and tracking
+- **Dynamic Configuration**: Real-time leverage and position size adjustment via dashboard
+- **Risk Management**: Automatic take profit (+5%) and stop loss (-3%) on every trade
 
 ---
 
@@ -114,9 +116,28 @@ cd ..
 
 ## 🎮 Running the Application
 
-You need **3 separate terminals** to run all components:
+### Quick Start (WSL/Linux)
 
-### Terminal 1: Trading Agent
+Use the provided startup script to run all components at once:
+
+```bash
+chmod +x start.sh
+./start.sh
+```
+
+This will start:
+
+- Trading Agent
+- FastAPI Backend (http://localhost:8000)
+- React Frontend (http://localhost:5173)
+
+Press `Ctrl+C` to stop all services.
+
+### Manual Startup (3 terminals)
+
+If you prefer to run components separately:
+
+**Terminal 1: Trading Agent**
 
 ```bash
 # Activate virtual environment first
@@ -128,7 +149,7 @@ source .venv/bin/activate  # Linux/macOS
 python -m agent.main
 ```
 
-### Terminal 2: FastAPI Backend
+**Terminal 2: FastAPI Backend**
 
 ```bash
 # Activate virtual environment first
@@ -140,7 +161,7 @@ source .venv/bin/activate  # Linux/macOS
 uvicorn api.server:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### Terminal 3: React Frontend
+**Terminal 3: React Frontend**
 
 ```bash
 cd frontend
@@ -158,21 +179,23 @@ StockMind/
 ├── agent/              # Trading agent logic
 │   ├── brain.py       # Gemini AI decision engine
 │   ├── signals.py     # Technical indicators (RSI, MACD, SMA)
-│   ├── executor.py    # Kraken CLI trade execution
+│   ├── executor.py    # Kraken CLI trade execution + dynamic config
 │   ├── db.py          # SQLite database operations
-│   └── main.py        # Main trading loop
+│   └── main.py        # Main trading loop + take profit/stop loss
 ├── api/               # FastAPI backend
-│   └── server.py      # REST API + WebSocket server
+│   └── server.py      # REST API + WebSocket server + config endpoints
 ├── frontend/          # React dashboard
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── ReasoningFeed.jsx  # Live decision feed
-│   │   │   ├── Portfolio.jsx       # Portfolio display
-│   │   │   └── PnLChart.jsx       # P&L chart
+│   │   │   ├── ConfigPanel.jsx      # Dynamic configuration panel
+│   │   │   ├── ReasoningFeed.jsx   # Live decision feed
+│   │   │   ├── Portfolio.jsx        # Portfolio display
+│   │   │   └── PnLChart.jsx        # P&L chart
 │   │   ├── App.jsx
 │   │   └── api.js
 │   └── public/
 │       └── favicon.svg
+├── start.sh           # Quick startup script (WSL/Linux)
 ├── .env.example       # Environment template
 ├── requirements.txt   # Python dependencies
 └── package.json       # Node.js dependencies
@@ -194,21 +217,26 @@ The dashboard displays a **Paper** or **Live** badge based on this setting.
 ### API Endpoints
 
 - `GET /decisions` - Get recent trading decisions
-- `GET /config` - Get current trading mode
+- `GET /config` - Get current trading mode, leverage, and max position percentage
+- `POST /config` - Update leverage (1-10) and max position percentage (1-25%)
+- `GET /balance` - Get current portfolio balance
 - `WS /ws` - WebSocket for real-time updates
 
 ### Environment Variables
 
-| Variable            | Description               | Default        |
-| ------------------- | ------------------------- | -------------- |
-| `GEMINI_API_KEY`    | Google Gemini API key     | Required       |
-| `KRAKEN_API_KEY`    | Kraken API key            | Required       |
-| `KRAKEN_API_SECRET` | Kraken API secret         | Required       |
-| `NEWS_API_KEY`      | NewsAPI key for sentiment | Optional       |
-| `TICKER`            | Trading pair ticker       | `PF_NVDAXUSD`  |
-| `INTERVAL_MINUTES`  | Trading loop interval     | `15`           |
-| `MODE`              | Trading mode (paper/live) | `paper`        |
-| `STOCKMIND_DB_PATH` | SQLite database path      | `stockmind.db` |
+| Variable            | Description                   | Default                 |
+| ------------------- | ----------------------------- | ----------------------- |
+| `GEMINI_API_KEY`    | Google Gemini API key         | Required                |
+| `KRAKEN_API_KEY`    | Kraken API key                | Required                |
+| `KRAKEN_API_SECRET` | Kraken API secret             | Required                |
+| `NEWS_API_KEY`      | NewsAPI key for sentiment     | Optional                |
+| `TICKER`            | Trading pair ticker           | `PF_NVDAXUSD`           |
+| `INTERVAL_MINUTES`  | Trading loop interval         | `15`                    |
+| `MODE`              | Trading mode (paper/live)     | `paper`                 |
+| `FUTURES_LEVERAGE`  | Default leverage (1-10)       | `5`                     |
+| `MAX_POSITION_PCT`  | Default max position % (1-25) | `10`                    |
+| `API_BASE_URL`      | FastAPI backend URL for agent | `http://localhost:8000` |
+| `STOCKMIND_DB_PATH` | SQLite database path          | `stockmind.db`          |
 
 ---
 

@@ -19,3 +19,19 @@ export function wsUrl() {
   const host = loc.hostname === "localhost" ? "localhost:8000" : loc.host;
   return `${proto}://${host}/ws`;
 }
+
+export async function getConfig() {
+  const res = await fetch(apiUrl("/config"));
+  if (!res.ok) throw new Error("Failed to fetch config");
+  return res.json();
+}
+
+export async function updateConfig(config) {
+  const res = await fetch(apiUrl("/config"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(config),
+  });
+  if (!res.ok) throw new Error("Failed to update config");
+  return res.json();
+}

@@ -4,10 +4,12 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from typing import Optional
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(_REPO_ROOT) not in sys.path:
@@ -27,6 +29,15 @@ app.add_middleware(
 
 connected_clients: list[WebSocket] = []
 
+# Global configuration variables
+config_leverage: int = int(os.getenv("FUTURES_LEVERAGE", "5"))
+config_max_position_pct: float = float(os.getenv("MAX_POSITION_PCT", "10")) / 100
+
+
+class ConfigUpdate(BaseModel):
+    leverage: Optional[int] = None
+    max_position_pct: Optional[float] = None
+
 
 @app.get("/decisions")
 def decisions():
@@ -35,8 +46,33 @@ def decisions():
 
 @app.get("/config")
 def public_config():
-    """Modo de trading para el badge del frontend (sin secretos)."""
-    return {"mode": os.getenv("MODE", "paper").lower()}
+    """Modo de trading y configuración para el frontend (sin secretos)."""
+    return {
+        "mode": os.getenv("MODE", "paper").lower(),
+        "leverage": config_leverage,
+        "max_position_pct": round(config_max_position_pct * 100, 1)
+    }
+
+
+@app.post("/config")
+def update_config(update: ConfigUpdate):
+    """Actualiza leverage y max_position_pct en memoria."""
+    global config_leverage, config_max_position_pct
+    
+    if update.leverage is not None:
+        if not 1 <= update.leverage <= 10:
+            raise ValueError("Leverage must be between 1 and 10")
+        config_leverage = update.leverage
+    
+    if update.max_position_pct is not None:
+        if not 1 <= update.max_position_pct <= 25:
+            raise ValueError("Max position percentage must be between 1% and 25%")
+        config_max_position_pct = update.max_position_pct / 100
+    
+    return {
+        "leverage": config_leverage,
+        "max_position_pct": round(config_max_position_pct * 100, 1)
+    }
 
 
 @app.get("/balance")

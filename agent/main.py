@@ -103,6 +103,9 @@ def run() -> None:
     print(f"[StockMind] Iniciando en modo {MODE} | Ticker: {TICKER}")
 
     current_position = 0.0
+    entry_price = None  # Precio de entrada para take profit/stop loss
+    TAKE_PROFIT_PCT = 0.05  # +5%
+    STOP_LOSS_PCT = 0.03  # -3%
 
     while True:
         try:
@@ -116,6 +119,34 @@ def run() -> None:
 
             log_decision(decision, signals)
 
+            # Verificar take profit / stop loss si hay posición abierta
+            if current_position > 0 and entry_price is not None:
+                current_price = signals["price"]
+                price_change_pct = (current_price - entry_price) / entry_price
+
+                if price_change_pct >= TAKE_PROFIT_PCT:
+                    print(f"[TAKE PROFIT] Precio subió {price_change_pct:.1%} (+{TAKE_PROFIT_PCT:.0%}). Ejecutando SELL automático...")
+                    balance = get_balance()
+                    portfolio_value = _portfolio_usd_from_balance(balance)
+                    volume = calculate_volume(TICKER, current_price, portfolio_value)
+                    response = execute_order("SELL", TICKER, volume)
+                    log_trade("SELL", TICKER, volume, current_price, MODE, response)
+                    print(f"[TAKE PROFIT] SELL ejecutado: {volume} {TICKER} @ {current_price}")
+                    current_position = max(0, current_position - volume)
+                    entry_price = None
+                    continue
+                elif price_change_pct <= -STOP_LOSS_PCT:
+                    print(f"[STOP LOSS] Precio bajó {price_change_pct:.1%} (-{STOP_LOSS_PCT:.0%}). Ejecutando SELL automático...")
+                    balance = get_balance()
+                    portfolio_value = _portfolio_usd_from_balance(balance)
+                    volume = calculate_volume(TICKER, current_price, portfolio_value)
+                    response = execute_order("SELL", TICKER, volume)
+                    log_trade("SELL", TICKER, volume, current_price, MODE, response)
+                    print(f"[STOP LOSS] SELL ejecutado: {volume} {TICKER} @ {current_price}")
+                    current_position = max(0, current_position - volume)
+                    entry_price = None
+                    continue
+
             if decision["action"] in ("BUY", "SELL"):
                 balance = get_balance()
                 portfolio_value = _portfolio_usd_from_balance(balance)
@@ -127,8 +158,12 @@ def run() -> None:
 
                 if decision["action"] == "BUY":
                     current_position += volume
+                    entry_price = signals["price"]
+                    print(f"[loop] Precio de entrada guardado: {entry_price}")
                 elif decision["action"] == "SELL":
                     current_position = max(0, current_position - volume)
+                    if current_position == 0:
+                        entry_price = None
 
         except Exception as e:
             print(f"[loop] Error en ciclo: {e}")

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiUrl } from "./api.js";
+import ConfigPanel from "./components/ConfigPanel.jsx";
 import PnLChart from "./components/PnLChart.jsx";
 import Portfolio from "./components/Portfolio.jsx";
 import ReasoningFeed from "./components/ReasoningFeed.jsx";
@@ -30,7 +31,9 @@ export default function App() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <header className="mb-8 flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">StockMind</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-white">
+            StockMind
+          </h1>
           <p className="mt-1 text-sm text-slate-400">
             xStocks · Kraken CLI · Gemini — dashboard de razonamiento
           </p>
@@ -46,6 +49,7 @@ export default function App() {
         <div className="lg:col-span-2">
           <ReasoningFeed />
         </div>
+        <ConfigPanel />
         <Portfolio />
         <PnLChart />
       </div>
