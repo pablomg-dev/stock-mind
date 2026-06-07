@@ -3,12 +3,15 @@
 # StockMind Startup Script
 # Starts the trading agent, FastAPI backend, and React frontend
 
-PROJECT_DIR="/mnt/c/Users/pablo/pablo/Documents/Coding/StockMind"
+PROJECT_DIR="/home/pmg/stock-mind"
 cd "$PROJECT_DIR" || exit 1
 
-# Activate virtual environment
+# Ensure Python dependencies are available (system or venv)
 export PATH="$HOME/.cargo/bin:$PATH"
-source .venv-wsl/bin/activate
+# Use venv if available, otherwise system Python
+if [ -f ".venv-wsl/bin/activate" ]; then
+    . .venv-wsl/bin/activate
+fi
 
 # Function to cleanup background processes on exit
 cleanup() {
@@ -37,13 +40,13 @@ echo "================================"
 
 # Start Trading Agent (Terminal 1)
 echo "Starting Trading Agent..."
-PYTHONPATH=. python agent/main.py &
+PYTHONPATH=. python3 agent/main.py &
 AGENT_PID=$!
 echo "Agent started (PID: $AGENT_PID)"
 
 # Start FastAPI Backend (Terminal 2)
 echo "Starting FastAPI Backend..."
-PYTHONPATH=. uvicorn api.server:app --reload --host 0.0.0.0 --port 8000 &
+PYTHONPATH=. python3 -m uvicorn api.server:app --reload --host 0.0.0.0 --port 8000 &
 API_PID=$!
 echo "FastAPI started (PID: $API_PID)"
 

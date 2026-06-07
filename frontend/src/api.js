@@ -41,3 +41,24 @@ export async function getPosition() {
   if (!res.ok) throw new Error("Failed to fetch position");
   return res.json();
 }
+
+export async function getAgentStatus() {
+  const res = await fetch(apiUrl("/status"));
+  if (!res.ok) throw new Error("Failed to fetch agent status");
+  return res.json();
+}
+
+export async function getTrades() {
+  const res = await fetch(apiUrl("/trades"));
+  if (!res.ok) throw new Error("Failed to fetch trades");
+  return res.json();
+}
+
+export async function emergencyClose() {
+  const res = await fetch(apiUrl("/emergency-close"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!res.ok) throw new Error("Failed to execute emergency close");
+  return res.json();
+}

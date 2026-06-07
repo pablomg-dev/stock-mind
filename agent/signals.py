@@ -149,9 +149,9 @@ def get_ohlcv(symbol: str, interval: int = 60) -> pd.DataFrame:
             }
         )
 
-    if len(rows) < 5:
+    if len(rows) < 3:
         raise ValueError(
-            f"Muy pocos trades válidos ({len(rows)}) para indicadores en {symbol!r}."
+            f"Muy pocos trades válidos ({len(rows)}) en {symbol!r}."
         )
 
     df = pd.DataFrame(rows)
@@ -161,26 +161,36 @@ def get_ohlcv(symbol: str, interval: int = 60) -> pd.DataFrame:
 
 
 def calculate_indicators(df: pd.DataFrame) -> dict:
-    """Calcula RSI, MACD y SMA sobre el dataframe de precios."""
+    """Calcula RSI, MACD y SMA adaptando períodos a los datos disponibles."""
     close = df["close"]
+    n = len(close)
+    rsi_len = min(14, max(2, n - 1))
+    sma_len = min(20, max(2, n - 1))
+    macd_fast = min(12, max(2, n // 2))
+    macd_slow = min(26, max(3, n - 1))
+    macd_signal_len = min(9, max(2, macd_slow // 2))
 
     if ta:
-        rsi = float(ta.rsi(close, length=14).iloc[-1])
-        macd_df = ta.macd(close)
-        macd = float(macd_df["MACD_12_26_9"].iloc[-1])
-        macd_signal = float(macd_df["MACDs_12_26_9"].iloc[-1])
-        sma20 = float(ta.sma(close, length=20).iloc[-1])
-    else:
-        delta = close.diff()
-        gain = delta.clip(lower=0).rolling(14).mean()
-        loss = (-delta.clip(upper=0)).rolling(14).mean()
-        rs = gain / loss
-        rsi = float((100 - 100 / (1 + rs)).iloc[-1])
-        sma20 = float(close.rolling(20).mean().iloc[-1])
-        ema12 = close.ewm(span=12).mean()
-        ema26 = close.ewm(span=26).mean()
-        macd = float((ema12 - ema26).iloc[-1])
-        macd_signal = float((ema12 - ema26).ewm(span=9).mean().iloc[-1])
+        rsi_series = ta.rsi(close, length=rsi_len)
+        macd_df = ta.macd(close, fast=macd_fast, slow=macd_slow, signal=macd_signal_len)
+        sma_series = ta.sma(close, length=sma_len)
+        if rsi_series is not None and macd_df is not None and sma_series is not None:
+            rsi = float(rsi_series.iloc[-1])
+            macd = float(macd_df[f"MACD_{macd_fast}_{macd_slow}_{macd_signal_len}"].iloc[-1])
+            macd_signal = float(macd_df[f"MACDs_{macd_fast}_{macd_slow}_{macd_signal_len}"].iloc[-1])
+            sma20 = float(sma_series.iloc[-1])
+            return {"rsi": rsi, "macd": macd, "macd_signal": macd_signal, "sma20": sma20}
+
+    delta = close.diff()
+    gain = delta.clip(lower=0).rolling(rsi_len).mean()
+    loss = (-delta.clip(upper=0)).rolling(rsi_len).mean()
+    rs = gain / loss
+    rsi = float((100 - 100 / (1 + rs)).iloc[-1])
+    sma20 = float(close.rolling(sma_len).mean().iloc[-1])
+    ema_fast = close.ewm(span=macd_fast).mean()
+    ema_slow = close.ewm(span=macd_slow).mean()
+    macd = float((ema_fast - ema_slow).iloc[-1])
+    macd_signal = float((ema_fast - ema_slow).ewm(span=macd_signal_len).mean().iloc[-1])
 
     return {"rsi": rsi, "macd": macd, "macd_signal": macd_signal, "sma20": sma20}
 

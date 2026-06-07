@@ -9,7 +9,7 @@ _ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(_ROOT / ".env")
 
 from agent.brain import get_decision
-from agent.db import init_db, log_decision, log_trade
+from agent.db import init_db, log_decision, log_trade, update_agent_status, log_error
 from agent.executor import MODE, calculate_volume, execute_order, get_balance, get_config
 from agent.signals import build_signals
 
@@ -109,6 +109,7 @@ def run() -> None:
 
     while True:
         try:
+            update_agent_status("running")
             print(f"\n[loop] Calculando señales para {TICKER}...")
             signals = build_signals(TICKER, current_position)
             print(f"[loop] RSI: {signals['rsi']:.1f} | Sentimiento: {signals['sentiment']}")
@@ -166,7 +167,10 @@ def run() -> None:
                         entry_price = None
 
         except Exception as e:
-            print(f"[loop] Error en ciclo: {e}")
+            error_msg = str(e)
+            print(f"[loop] Error en ciclo: {error_msg}")
+            log_error("agent_loop", error_msg, "")
+            update_agent_status("error", error_msg)
 
         try:
             interval_sec = get_config().get("interval_minutes", 15) * 60
