@@ -13,14 +13,18 @@ function actionBadge(action) {
 export default function TradeHistory() {
   const [trades, setTrades] = useState([]);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const load = useCallback(async () => {
+    setLoading(true);
     try {
       const data = await getTrades();
       setTrades(Array.isArray(data) ? data : []);
       setError(null);
     } catch (e) {
       setError(e?.message || "Error loading trades");
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -44,9 +48,10 @@ export default function TradeHistory() {
         <button
           type="button"
           onClick={load}
-          className="rounded-lg bg-slate-800 px-3 py-1.5 text-sm font-medium text-slate-200 ring-1 ring-slate-700 hover:bg-slate-800/80"
+          disabled={loading}
+          className="rounded-lg bg-slate-800 px-3 py-1.5 text-sm font-medium text-slate-200 ring-1 ring-slate-700 hover:bg-slate-800/80 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Refresh
+          {loading ? "Loading..." : "Refresh"}
         </button>
       </div>
 
@@ -56,11 +61,17 @@ export default function TradeHistory() {
         </p>
       )}
 
-      <div className="max-h-[400px] overflow-y-auto">
+      <div>
         {trades.length === 0 && !error && (
           <div className="rounded-xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-8 text-center text-slate-500">
             No trades in the database. Run the agent to execute trades.
           </div>
+        )}
+
+        {trades.length > 0 && (
+          <p className="mb-3 text-xs text-slate-500">
+            Showing last {Math.min(5, trades.length)} of {trades.length} trades
+          </p>
         )}
 
         <table className="w-full text-sm">
@@ -75,7 +86,7 @@ export default function TradeHistory() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800">
-            {trades.map((t, i) => (
+            {trades.slice(0, 5).map((t, i) => (
               <tr key={i} className="text-slate-300">
                 <td className="py-3 pr-4 font-mono text-xs text-slate-400">
                   {new Date(t.timestamp).toLocaleString(undefined, {

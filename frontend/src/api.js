@@ -49,7 +49,7 @@ export async function getAgentStatus() {
 }
 
 export async function getTrades() {
-  const res = await fetch(apiUrl("/trades"));
+  const res = await fetch(apiUrl(`/trades?_t=${Date.now()}`));
   if (!res.ok) throw new Error("Failed to fetch trades");
   return res.json();
 }
