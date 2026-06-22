@@ -10,6 +10,13 @@ function actionBadge(action) {
   return "bg-amber-500/15 text-amber-200 ring-1 ring-amber-500/35";
 }
 
+function formatUSD(n) {
+  if (typeof n !== "number") return "—";
+  if (Math.abs(n) >= 1000)
+    return `$${(n / 1000).toFixed(1)}k`;
+  return `$${n.toFixed(2)}`;
+}
+
 export default function TradeHistory() {
   const [trades, setTrades] = useState([]);
   const [error, setError] = useState(null);
@@ -61,7 +68,7 @@ export default function TradeHistory() {
         </p>
       )}
 
-      <div>
+      <div className="overflow-x-auto">
         {trades.length === 0 && !error && (
           <div className="rounded-xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-8 text-center text-slate-500">
             No trades in the database. Run the agent to execute trades.
@@ -75,56 +82,47 @@ export default function TradeHistory() {
         )}
 
         <table className="w-full text-sm">
-          <thead className="sticky top-0 bg-slate-900/95">
+          <thead>
             <tr className="border-b border-slate-800 text-left text-xs uppercase tracking-wide text-slate-500">
-              <th className="pb-2 pr-4">Time</th>
-              <th className="pb-2 pr-4">Ticker</th>
-              <th className="pb-2 pr-4">Action</th>
-              <th className="pb-2 pr-4 text-right">USD Value</th>
-              <th className="pb-2 pr-4 text-right">Price</th>
-              <th className="pb-2 pr-4 text-right">Vol</th>
-              <th className="pb-2 pr-4 text-center">Lev</th>
+              <th className="pb-2 pr-3">Time</th>
+              <th className="pb-2 pr-3">Ticker</th>
+              <th className="pb-2 pr-3">Action</th>
+              <th className="pb-2 pr-3 text-right">Value</th>
+              <th className="pb-2 pr-3 text-right">Price</th>
+              <th className="pb-2 pr-3 text-center">Lev</th>
               <th className="pb-2 text-right">Mode</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800">
             {trades.slice(0, 5).map((t, i) => (
               <tr key={i} className="text-slate-300">
-                <td className="py-3 pr-4 font-mono text-xs text-slate-400">
+                <td className="whitespace-nowrap py-3 pr-3 font-mono text-xs text-slate-400">
                   {new Date(t.timestamp).toLocaleString(undefined, {
                     month: "2-digit",
                     day: "2-digit",
                     hour: "2-digit",
                     minute: "2-digit",
-                    second: "2-digit",
                   })}
                 </td>
-                <td className="py-3 pr-4">{t.ticker}</td>
-                <td className="py-3 pr-4">
+                <td className="py-3 pr-3 text-xs text-slate-400">{t.ticker}</td>
+                <td className="py-3 pr-3">
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs font-semibold uppercase ${actionBadge(t.action)}`}
                   >
                     {t.action}
                   </span>
                 </td>
-                <td className="py-3 pr-4 text-right font-mono">
-                  {typeof t.usd_volume === "number"
-                    ? `$${t.usd_volume.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                    : "—"}
+                <td className="whitespace-nowrap py-3 pr-3 text-right font-mono font-medium text-slate-100">
+                  {formatUSD(t.usd_volume)}
                 </td>
-                <td className="py-3 pr-4 text-right font-mono">
+                <td className="whitespace-nowrap py-3 pr-3 text-right font-mono text-slate-300">
                   {typeof t.price === "number" ? `$${t.price.toFixed(2)}` : "—"}
                 </td>
-                <td className="py-3 pr-4 text-right font-mono text-slate-400">
-                  {typeof t.volume === "number" ? t.volume.toFixed(4) : "—"}
-                </td>
-                <td className="py-3 pr-4 text-center font-mono text-xs">
-                  {typeof t.leverage === "number"
-                    ? `${t.leverage}x`
-                    : "—"}
+                <td className="py-3 pr-3 text-center font-mono text-xs text-slate-500">
+                  {typeof t.leverage === "number" ? `${t.leverage}x` : "—"}
                 </td>
                 <td className="py-3 text-right">
-                  <span className="text-xs capitalize text-slate-400">{t.mode}</span>
+                  <span className="text-xs capitalize text-slate-500">{t.mode}</span>
                 </td>
               </tr>
             ))}
