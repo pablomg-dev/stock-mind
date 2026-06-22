@@ -80,8 +80,10 @@ export default function TradeHistory() {
               <th className="pb-2 pr-4">Time</th>
               <th className="pb-2 pr-4">Ticker</th>
               <th className="pb-2 pr-4">Action</th>
-              <th className="pb-2 pr-4 text-right">Volume</th>
+              <th className="pb-2 pr-4 text-right">USD Value</th>
               <th className="pb-2 pr-4 text-right">Price</th>
+              <th className="pb-2 pr-4 text-right">Vol</th>
+              <th className="pb-2 pr-4 text-center">Lev</th>
               <th className="pb-2 text-right">Mode</th>
             </tr>
           </thead>
@@ -106,10 +108,20 @@ export default function TradeHistory() {
                   </span>
                 </td>
                 <td className="py-3 pr-4 text-right font-mono">
-                  {typeof t.volume === "number" ? t.volume.toFixed(4) : "—"}
+                  {typeof t.usd_volume === "number"
+                    ? `$${t.usd_volume.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                    : "—"}
                 </td>
                 <td className="py-3 pr-4 text-right font-mono">
                   {typeof t.price === "number" ? `$${t.price.toFixed(2)}` : "—"}
+                </td>
+                <td className="py-3 pr-4 text-right font-mono text-slate-400">
+                  {typeof t.volume === "number" ? t.volume.toFixed(4) : "—"}
+                </td>
+                <td className="py-3 pr-4 text-center font-mono text-xs">
+                  {typeof t.leverage === "number"
+                    ? `${t.leverage}x`
+                    : "—"}
                 </td>
                 <td className="py-3 text-right">
                   <span className="text-xs capitalize text-slate-400">{t.mode}</span>

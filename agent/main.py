@@ -109,6 +109,9 @@ def run() -> None:
 
     while True:
         try:
+            config = get_config()
+            current_leverage = config.get("leverage", 5)
+
             update_agent_status("running")
             print(f"\n[loop] Calculando señales para {TICKER}...")
             signals = build_signals(TICKER, current_position)
@@ -133,7 +136,7 @@ def run() -> None:
                     portfolio_value = _portfolio_usd_from_balance(balance)
                     volume = calculate_volume(TICKER, current_price, portfolio_value)
                     response = execute_order("SELL", TICKER, volume)
-                    log_trade("SELL", TICKER, volume, current_price, MODE, response)
+                    log_trade("SELL", TICKER, volume, current_price, MODE, response, leverage=current_leverage)
                     print(f"[TAKE PROFIT] SELL ejecutado: {volume} {TICKER} @ {current_price}")
                     current_position = max(0, current_position - volume)
                     entry_price = None
@@ -144,7 +147,7 @@ def run() -> None:
                     portfolio_value = _portfolio_usd_from_balance(balance)
                     volume = calculate_volume(TICKER, current_price, portfolio_value)
                     response = execute_order("SELL", TICKER, volume)
-                    log_trade("SELL", TICKER, volume, current_price, MODE, response)
+                    log_trade("SELL", TICKER, volume, current_price, MODE, response, leverage=current_leverage)
                     print(f"[STOP LOSS] SELL ejecutado: {volume} {TICKER} @ {current_price}")
                     current_position = max(0, current_position - volume)
                     entry_price = None
@@ -156,7 +159,7 @@ def run() -> None:
                 volume = calculate_volume(TICKER, signals["price"], portfolio_value)
 
                 response = execute_order(decision["action"], TICKER, volume)
-                log_trade(decision["action"], TICKER, volume, signals["price"], MODE, response)
+                log_trade(decision["action"], TICKER, volume, signals["price"], MODE, response, leverage=current_leverage)
                 print(f"[loop] Orden ejecutada: {decision['action']} {volume} {TICKER}")
 
                 if decision["action"] == "BUY":

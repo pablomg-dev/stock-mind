@@ -65,6 +65,12 @@ def init_db() -> None:
         VALUES (1, 'stopped', NULL, NULL, ?)
     """, (datetime.now(timezone.utc).isoformat(),))
     conn.commit()
+    # Migración: agregar columna leverage si no existe
+    try:
+        conn.execute("ALTER TABLE trades ADD COLUMN leverage INTEGER")
+    except sqlite3.OperationalError:
+        pass  # ya existe
+    conn.commit()
     conn.close()
 
 
@@ -87,12 +93,12 @@ def log_decision(decision: dict, signals: dict) -> None:
     conn.close()
 
 
-def log_trade(action: str, ticker: str, volume: float, price: float, mode: str, response: dict) -> None:
+def log_trade(action: str, ticker: str, volume: float, price: float, mode: str, response: dict, leverage: int = 5) -> None:
     """Guarda un trade ejecutado."""
     conn = sqlite3.connect(DB_PATH)
     conn.execute("""
-        INSERT INTO trades (timestamp, ticker, action, volume, price, mode, kraken_response)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO trades (timestamp, ticker, action, volume, price, mode, kraken_response, leverage)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         datetime.now(timezone.utc).isoformat(),
         ticker,
@@ -101,6 +107,7 @@ def log_trade(action: str, ticker: str, volume: float, price: float, mode: str, 
         price,
         mode,
         json.dumps(response, default=str),
+        leverage,
     ))
     conn.commit()
     conn.close()
@@ -155,13 +162,14 @@ def get_recent_trades_only(limit: int = 5) -> list[dict]:
     """Devuelve los últimos trades ejecutados (BUY/SEL reales, no HOLDs)."""
     conn = sqlite3.connect(DB_PATH)
     rows = conn.execute("""
-        SELECT timestamp, ticker, action, volume, price, mode
+        SELECT timestamp, ticker, action, volume, price, mode, leverage
         FROM trades ORDER BY id DESC LIMIT ?
     """, (limit,)).fetchall()
     conn.close()
     return [
         {"timestamp": r[0], "ticker": r[1], "action": r[2],
-         "volume": r[3], "price": r[4], "mode": r[5]}
+         "volume": r[3], "price": r[4], "mode": r[5],
+         "leverage": r[6], "usd_volume": round(r[3] * r[4], 2)}
         for r in rows
     ]
 
@@ -266,12 +274,13 @@ def get_recent_trades(limit: int = 50) -> list[dict]:
     """Devuelve los últimos trades ejecutados."""
     conn = sqlite3.connect(DB_PATH)
     rows = conn.execute("""
-        SELECT timestamp, ticker, action, volume, price, mode
+        SELECT timestamp, ticker, action, volume, price, mode, leverage
         FROM trades ORDER BY id DESC LIMIT ?
     """, (limit,)).fetchall()
     conn.close()
     return [
         {"timestamp": r[0], "ticker": r[1], "action": r[2],
-         "volume": r[3], "price": r[4], "mode": r[5]}
+         "volume": r[3], "price": r[4], "mode": r[5],
+         "leverage": r[6], "usd_volume": round(r[3] * r[4], 2)}
         for r in rows
     ]
