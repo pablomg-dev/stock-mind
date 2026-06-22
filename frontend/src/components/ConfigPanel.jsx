@@ -17,7 +17,7 @@ export default function ConfigPanel() {
       const config = await getConfig();
       setLeverage(config.leverage || 5);
       setMaxPositionPct(config.max_position_pct || 10);
-      setIntervalMinutes(config.interval_minutes || 15);
+      setIntervalMinutes(config.interval_minutes || 60);
     } catch (error) {
       console.error("Failed to load config:", error);
     }

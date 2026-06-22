@@ -121,6 +121,51 @@ def get_recent_decisions(limit: int = 20) -> list[dict]:
     ]
 
 
+def get_recent_decisions_with_signals(limit: int = 5) -> list[dict]:
+    """Devuelve las últimas decisiones incluyendo las señales en formato dict.
+    Útil para pasar contexto histórico al modelo de IA.
+    """
+    conn = sqlite3.connect(DB_PATH)
+    rows = conn.execute("""
+        SELECT timestamp, ticker, action, confidence, reasoning, risk_note, signals
+        FROM reasoning_log ORDER BY id DESC LIMIT ?
+    """, (limit,)).fetchall()
+    conn.close()
+    decisions = []
+    for r in rows:
+        signals = {}
+        if r[6]:
+            try:
+                signals = json.loads(r[6])
+            except json.JSONDecodeError:
+                pass
+        decisions.append({
+            "timestamp": r[0],
+            "ticker": r[1],
+            "action": r[2],
+            "confidence": r[3],
+            "reasoning": r[4],
+            "risk_note": r[5],
+            "signals": signals,
+        })
+    return decisions
+
+
+def get_recent_trades_only(limit: int = 5) -> list[dict]:
+    """Devuelve los últimos trades ejecutados (BUY/SEL reales, no HOLDs)."""
+    conn = sqlite3.connect(DB_PATH)
+    rows = conn.execute("""
+        SELECT timestamp, ticker, action, volume, price, mode
+        FROM trades ORDER BY id DESC LIMIT ?
+    """, (limit,)).fetchall()
+    conn.close()
+    return [
+        {"timestamp": r[0], "ticker": r[1], "action": r[2],
+         "volume": r[3], "price": r[4], "mode": r[5]}
+        for r in rows
+    ]
+
+
 def get_config_db() -> dict:
     """Obtiene configuración persistente de la base de datos."""
     conn = sqlite3.connect(DB_PATH)

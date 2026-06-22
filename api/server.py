@@ -41,7 +41,7 @@ connected_clients: list[WebSocket] = []
 # Global configuration variables (fallback to env)
 config_leverage: int = int(os.getenv("FUTURES_LEVERAGE", "5"))
 config_max_position_pct: float = float(os.getenv("MAX_POSITION_PCT", "10")) / 100
-config_interval_minutes: int = int(os.getenv("INTERVAL_MINUTES", "15"))
+config_interval_minutes: int = int(os.getenv("INTERVAL_MINUTES", "60"))
 
 
 def _load_persistent_config():

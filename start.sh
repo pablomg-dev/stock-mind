@@ -9,8 +9,8 @@ cd "$PROJECT_DIR" || exit 1
 # Ensure Python dependencies are available (system or venv)
 export PATH="$HOME/.cargo/bin:$PATH"
 # Use venv if available, otherwise system Python
-if [ -f ".venv-wsl/bin/activate" ]; then
-    . .venv-wsl/bin/activate
+if [ -f ".venv/bin/activate" ]; then
+    . .venv/bin/activate
 fi
 
 # Function to cleanup background processes on exit

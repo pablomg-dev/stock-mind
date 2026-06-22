@@ -9,12 +9,12 @@ _ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(_ROOT / ".env")
 
 from agent.brain import get_decision
-from agent.db import init_db, log_decision, log_trade, update_agent_status, log_error
+from agent.db import init_db, log_decision, log_trade, update_agent_status, log_error, get_recent_decisions_with_signals
 from agent.executor import MODE, calculate_volume, execute_order, get_balance, get_config
 from agent.signals import build_signals
 
 TICKER = os.getenv("TICKER", "PF_NVDAXUSD")
-INTERVAL = int(os.getenv("INTERVAL_MINUTES", "15")) * 60
+INTERVAL = int(os.getenv("INTERVAL_MINUTES", "60")) * 60
 
 
 def _float_from(obj: Any, *keys: str) -> float | None:
@@ -112,9 +112,11 @@ def run() -> None:
             update_agent_status("running")
             print(f"\n[loop] Calculando señales para {TICKER}...")
             signals = build_signals(TICKER, current_position)
-            print(f"[loop] RSI: {signals['rsi']:.1f} | Sentimiento: {signals['sentiment']}")
+            print(f"[loop] RSI 1H: {signals['rsi']:.1f} | 4H Trend: {signals['htf_trend_ema']} | Sentimiento: {signals['sentiment']}")
 
-            decision = get_decision(signals)
+            # Obtener historial reciente para contexto
+            recent_decisions = get_recent_decisions_with_signals(limit=5)
+            decision = get_decision(signals, recent_decisions=recent_decisions)
             print(f"[loop] Decisión: {decision['action']} | Confianza: {decision['confidence']:.0%}")
             print(f"[loop] Razonamiento: {decision['reasoning']}")
 
